@@ -85,20 +85,30 @@
       /* add element to menu */
       menuContainer.appendChild(thisProduct.element);
     }
-    getElements(){
+    getElements() {
       const thisProduct = this;
-    
-      thisProduct.accordionTrigger = thisProduct.element.querySelector(select.menuProduct.clickable);
-      thisProduct.form = thisProduct.element.querySelector(select.menuProduct.form);
-      thisProduct.formInputs = thisProduct.form.querySelectorAll(select.all.formInputs);
-      thisProduct.cartButton = thisProduct.element.querySelector(select.menuProduct.cartButton);
-      thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
+
+      thisProduct.accordionTrigger = thisProduct.element.querySelector(
+        select.menuProduct.clickable
+      );
+      thisProduct.form = thisProduct.element.querySelector(
+        select.menuProduct.form
+      );
+      thisProduct.formInputs = thisProduct.form.querySelectorAll(
+        select.all.formInputs
+      );
+      thisProduct.cartButton = thisProduct.element.querySelector(
+        select.menuProduct.cartButton
+      );
+      thisProduct.priceElem = thisProduct.element.querySelector(
+        select.menuProduct.priceElem
+      );
     }
     initAccordion() {
       const thisProduct = this;
 
       /* START: add event listener to clickable trigger on event click */
-      thisProduct.accordionTrigger.addEventListener('click', function(event) {
+      thisProduct.accordionTrigger.addEventListener('click', function (event) {
         /* prevent default action for event */
         event.preventDefault();
         /* find active product (product that has active class) */
@@ -111,29 +121,67 @@
         thisProduct.element.classList.toggle('active');
       });
     }
-    initOrderForm(){
+    initOrderForm() {
       const thisProduct = this;
       console.log(thisProduct);
-      
-      thisProduct.form.addEventListener('submit', function(event){
+
+      thisProduct.form.addEventListener('submit', function (event) {
         event.preventDefault();
         thisProduct.processOrder();
       });
-      
-      for(let input of thisProduct.formInputs){
-        input.addEventListener('change', function(){
+
+      for (let input of thisProduct.formInputs) {
+        input.addEventListener('change', function () {
           thisProduct.processOrder();
         });
       }
-      
-      thisProduct.cartButton.addEventListener('click', function(event){
+
+      thisProduct.cartButton.addEventListener('click', function (event) {
         event.preventDefault();
         thisProduct.processOrder();
       });
     }
-    processOrder(){
+    processOrder() {
       const thisProduct = this;
-      console.log(thisProduct);
+
+      // covert form to object structure e.g. { sauce: ['tomato'], toppings: ['olives', 'redPeppers']}
+      const formData = utils.serializeFormToObject(thisProduct.form);
+      console.log('formData', formData);
+
+      // set price to default price
+      let price = thisProduct.data.price;
+
+      // for every category (param)...
+      for (let paramId in thisProduct.data.params) {
+        // determine param value, e.g. paramId = 'toppings', param = { label: 'Toppings', type: 'checkboxes'... }
+        const param = thisProduct.data.params[paramId];
+        console.log(paramId, param);
+
+        // for every option in this category
+        for (let optionId in param.options) {
+          // determine option value, e.g. optionId = 'olives', option = { label: 'Olives', price: 2, default: true }
+          const option = param.options[optionId];
+          console.log(optionId, option);
+
+          // Check if the option was selected by the user
+          if (formData[paramId] && formData[paramId].includes(optionId)) {
+            // The option was selected, check if it is not default
+            if (!option.default) {
+              // If it is not default, increase the price by the option's price
+              price += option.price;
+            }
+          } else {
+            // The option was not selected, but it might have been default
+            if (option.default) {
+              // If the option was default and got deselected, reduce the price
+              price -= option.price;
+            }
+          }
+        }
+      }
+
+      // update calculated price in the HTML
+      thisProduct.priceElem.innerHTML = price;
     }
   }
 
