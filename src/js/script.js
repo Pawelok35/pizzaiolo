@@ -107,7 +107,7 @@
       thisProduct.imageWrapper = thisProduct.element.querySelector(
         select.menuProduct.imageWrapper
       );
-      thisProduct.amountWidgetElem = thisProduct.select.menuProduct.amountWidget
+      thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
     }
     initAccordion() {
       const thisProduct = this;
@@ -211,14 +211,61 @@
 
   }
 
-  class AmountWidget{
-    constructor(element){
+  class AmountWidget {
+    constructor(element) {
       const thisWidget = this;
-
-      console.log('AmountWidget:', thisWidget);
-      console.log('constructor arguments:', element);
+  
+      thisWidget.getElements(element); // Pobieranie referencji do elementów
+      thisWidget.setValue(thisWidget.input.value); // Inicjalizacja wartości
+      thisWidget.initActions(); // Dodanie reakcji na eventy
+    }
+  
+    // Metoda do przypisania referencji do elementów DOM
+    getElements(element) {
+      const thisWidget = this;
+  
+      thisWidget.element = element;
+      thisWidget.input = thisWidget.element.querySelector(select.widgets.amount.input);
+      thisWidget.linkDecrease = thisWidget.element.querySelector(select.widgets.amount.linkDecrease);
+      thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+  
+    // Metoda do ustawiania wartości i walidacji
+    setValue(value) {
+      const thisWidget = this;
+      const newValue = parseInt(value);  // Konwersja na liczbę
+  
+      if (thisWidget.value !== newValue && !isNaN(newValue)) {
+        thisWidget.value = newValue;
+      }
+  
+      thisWidget.input.value = thisWidget.value;
+    }
+  
+    // Metoda do dodawania nasłuchiwaczy
+    initActions() {
+      const thisWidget = this;
+  
+      // Zmiana wartości w inpucie
+      thisWidget.input.addEventListener('change', function() {
+        thisWidget.setValue(thisWidget.input.value);
+      });
+  
+      // Zmniejszanie wartości za pomocą przycisku "-"
+      thisWidget.linkDecrease.addEventListener('click', function(event) {
+        event.preventDefault(); // Powstrzymanie domyślnej akcji linku
+        thisWidget.setValue(thisWidget.value - 1); // Zmniejszenie wartości o 1
+      });
+  
+      // Zwiększanie wartości za pomocą przycisku "+"
+      thisWidget.linkIncrease.addEventListener('click', function(event) {
+        event.preventDefault(); // Powstrzymanie domyślnej akcji linku
+        thisWidget.setValue(thisWidget.value + 1); // Zwiększenie wartości o 1
+      });
     }
   }
+  
+  
   const app = {
     initMenu: function () {
       const thisApp = this;
@@ -248,3 +295,4 @@
 
   app.init();
 }
+
