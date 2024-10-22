@@ -146,68 +146,72 @@
         thisProduct.processOrder();
       });
     }
-    initAmountWidget(){
+    initAmountWidget() {
       const thisProduct = this;
+    
       thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
+    
+      // Nasłuchiwanie na event 'updated'
+      thisProduct.amountWidgetElem.addEventListener('updated', function() {
+        thisProduct.processOrder(); // Wywołujemy ponowne przeliczenie ceny
+      });
     }
+    
     processOrder() {
       const thisProduct = this;
-
-      // covert form to object structure e.g. { sauce: ['tomato'], toppings: ['olives', 'redPeppers']}
+    
+      // Covert form to object structure e.g. { sauce: ['tomato'], toppings: ['olives', 'redPeppers']}
       const formData = utils.serializeFormToObject(thisProduct.form);
       console.log('formData', formData);
-
-      // set price to default price
+    
+      // Set price to default price
       let price = thisProduct.data.price;
-
-      // for every category (param)...
+    
+      // For every category (param)...
       for (let paramId in thisProduct.data.params) {
-        // determine param value, e.g. paramId = 'toppings', param = { label: 'Toppings', type: 'checkboxes'... }
         const param = thisProduct.data.params[paramId];
-        console.log(paramId, param);
-
-        // for every option in this category
+    
+        // For every option in this category
         for (let optionId in param.options) {
-          // determine option value, e.g. optionId = 'olives', option = { label: 'Olives', price: 2, default: true }
           const option = param.options[optionId];
-          console.log(optionId, option);
-
+    
           // Find the image with the class .paramId-optionId
           const optionImage = thisProduct.imageWrapper.querySelector(
             '.' + paramId + '-' + optionId
           );
-
+    
           // Check if the image exists
           if (optionImage) {
             // Check if the option is selected
             if (formData[paramId] && formData[paramId].includes(optionId)) {
-              // The option is selected, add the active class
               optionImage.classList.add(classNames.menuProduct.imageVisible);
             } else {
-              // The option is not selected, remove the active class
               optionImage.classList.remove(classNames.menuProduct.imageVisible);
             }
           }
-
+    
           // Check if the option was selected by the user
           if (formData[paramId] && formData[paramId].includes(optionId)) {
-            // The option was selected, check if it is not default
+            // If the option is not default, increase the price by the option's price
             if (!option.default) {
-              // If it is not default, increase the price by the option's price
               price += option.price;
             }
           } else {
-            // The option was not selected, but it might have been default
+            // If the option was default and got deselected, reduce the price
             if (option.default) {
-              // If the option was default and got deselected, reduce the price
               price -= option.price;
             }
           }
         }
       }
-      // update calculated price in the HTML
+    
+      // Multiply the price by the amount of the product
+      price *= thisProduct.amountWidget.value;
+    
+      // Update calculated price in the HTML
       thisProduct.priceElem.innerHTML = price;
     }
+    
 
   }
 
