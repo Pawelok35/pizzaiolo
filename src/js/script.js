@@ -215,9 +215,9 @@
     constructor(element) {
       const thisWidget = this;
   
-      thisWidget.getElements(element); // Pobieranie referencji do elementów
-      thisWidget.setValue(thisWidget.input.value); // Inicjalizacja wartości
-      thisWidget.initActions(); // Dodanie reakcji na eventy
+      thisWidget.getElements(element);
+      thisWidget.setValue(thisWidget.input.value);
+      thisWidget.initActions();
     }
   
     // Metoda do przypisania referencji do elementów DOM
@@ -235,35 +235,48 @@
       const thisWidget = this;
       const newValue = parseInt(value);  // Konwersja na liczbę
   
-      if (thisWidget.value !== newValue && !isNaN(newValue)) {
+      if (
+        thisWidget.value !== newValue &&
+        !isNaN(newValue) &&
+        newValue >= settings.amountWidget.defaultMin &&
+        newValue <= settings.amountWidget.defaultMax
+      ) {
         thisWidget.value = newValue;
+        thisWidget.announce(); // Wywołanie customowego eventu po zmianie wartości
       }
   
       thisWidget.input.value = thisWidget.value;
+    }
+  
+    // Metoda do wywołania customowego eventu
+    announce() {
+      const thisWidget = this;
+  
+      // Tworzymy event 'updated' i wywołujemy go na elemencie widgetu
+      const event = new Event('updated');
+      thisWidget.element.dispatchEvent(event);
     }
   
     // Metoda do dodawania nasłuchiwaczy
     initActions() {
       const thisWidget = this;
   
-      // Zmiana wartości w inpucie
       thisWidget.input.addEventListener('change', function() {
         thisWidget.setValue(thisWidget.input.value);
       });
   
-      // Zmniejszanie wartości za pomocą przycisku "-"
       thisWidget.linkDecrease.addEventListener('click', function(event) {
-        event.preventDefault(); // Powstrzymanie domyślnej akcji linku
-        thisWidget.setValue(thisWidget.value - 1); // Zmniejszenie wartości o 1
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value - 1);
       });
   
-      // Zwiększanie wartości za pomocą przycisku "+"
       thisWidget.linkIncrease.addEventListener('click', function(event) {
-        event.preventDefault(); // Powstrzymanie domyślnej akcji linku
-        thisWidget.setValue(thisWidget.value + 1); // Zwiększenie wartości o 1
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value + 1);
       });
     }
   }
+  
   
   
   const app = {
